@@ -8,12 +8,12 @@ dotenv.config();
 export function createUser(req, res) {
   try {
     // Only admins can create another admin
-    if (req.body.role === "admin") {
+    
+if (req.body.role === "admin") {
       if (!req.user || req.user.role !== "admin") {
         return res.status(403).json({ message: "Only admin can create another admin user" });
       }
     }
-
     const hashedPassword = bcrypt.hashSync(req.body.password, 10);
 
     const newUser = new User({
