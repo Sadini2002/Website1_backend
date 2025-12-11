@@ -9,9 +9,11 @@ const productRouter = express.Router();
 // Define product routes here
 productRouter.get("/",getProducts);
 productRouter.post("/", saveProduct);
-productRouter.delete("/:productId", deleteProduct);
-productRouter.put("/:productId", updateProduct);
-productRouter.get("/:productId", getProductById);
+productRouter.delete("/:id", deleteProduct);
+productRouter.put("/:id", updateProduct);
+productRouter.get("/:id", getProductById);
+productRouter.get("/productId/:productId", getProductById);
+
 
 export default productRouter;
 

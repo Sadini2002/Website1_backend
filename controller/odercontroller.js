@@ -89,3 +89,7 @@ export async function createOrder(req, res) {
     return res.status(500).json({ error: err.message });
   }
 }
+
+export async function getOrders(req, res) {
+ 
+ }

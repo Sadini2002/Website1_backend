@@ -1,113 +1,107 @@
-import product from "../model/product.js"; 
+import Product from "../model/product.js";
 import { isAdmin } from "./userController.js";
 
-export async function getProducts (req, res) {
-    
-    try {
-          if (isAdmin(req) ) {
-            const products = await product.find()
-            res.json(products)
-        } else  {
-
-            const products = await product.find({isAvailable:true  } )
-            res.json(products)
-        }
-    } catch (err) {
-
-        res.json({
-                message: "Failed to get products",
-                error: err.message
-            });
-            
-}
-}
-
-
-export function saveProduct(req, res) {
-
-    if(!isAdmin(req) ){
-        return res.status(403) .json({ message: "Only admin can create product" });
-        return;
+// GET ALL PRODUCTS
+export async function getProducts(req, res) {
+  try {
+    if (isAdmin(req)) {
+      const products = await Product.find();
+      return res.json(products);
+    } else {
+      const products = await Product.find({ isAvailable: true });
+      return res.json(products);
     }
-
- 
-    const newProduct = new product(
-        req.body    
-    );
-newProduct.save()
-    .then(() => {
-        res.json({ message: 'Product created successfully' });     
-    })
-    .catch((err) => {
-        res.json({ message: 'Error creating product', error: err });
-    }); 
-
-
-
+  } catch (err) {
+    res.status(500).json({
+      message: "Failed to get products",
+      error: err.message,
+    });
+  }
 }
-    
 
+// CREATE PRODUCT
+export async function saveProduct(req, res) {
+  if (!isAdmin(req)) {
+    return res.status(403).json({ message: "Only admin can create product" });
+  }
 
+  try {
+    const newProduct = new Product(req.body);
+    await newProduct.save();
+
+    res.json({ message: "Product created successfully" });
+  } catch (err) {
+    res.status(500).json({ message: "Error creating product", error: err });
+  }
+}
+
+// DELETE PRODUCT
 export async function deleteProduct(req, res) {
+  if (!isAdmin(req)) {
+    return res.status(403).json({ message: "Only admin can delete product" });
+  }
+try {
+    const id = req.params.id;
 
-    if(!isAdmin(req) ){
-        return res.status(403) .json({ message: "Only admin can delete product" });
-        return;
-    }
-    try{
-    await product.deleteOne({productId: req.body.productId})
-    res.json({ message: 'Product deleted successfully' });  
-    } catch (err) {
-        res.status(500).json({ message: 'Error deleting product', error: err });
-    }
+    const deleted = await Product.findByIdAndDelete(id);
 
+    if (!deleted) {
+      return res.status(404).json({ message: "Product not found" });}
+
+      return res.json({ message: "Product deleted successfully" });
+    
+  } catch (err) {
+    res.status(500).json({ message: "Error deleting product", error: err });
+  }
 }
 
+// UPDATE PRODUCT
 export async function updateProduct(req, res) {
-    if(!isAdmin(req) ){
-        return res.status(403) .json({ message: "Only admin can update product" });
-        return;
-    }
-    const productId = req.params.productId
-    const updatingData = req.body;
+  if (!isAdmin(req)) {
+    return res.status(403).json({ message: "Only admin can update product" });
+  }
 
-    try{
-        await product.updateOne({
-            productId: productId
-        },
-            updatingData
-        );
-        res.json({ message: 'Product updated successfully' });  
- 
-    }catch(err){
-        res.status(500).json({ message: 'Internal server Error', error: err });
+  try {
+    const id = req.params.id;
+
+    const updated = await Product.findByIdAndUpdate(id, req.body, {
+      new: true,
+    });
+
+    if (!updated) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    res.json({
+      message: "Product updated successfully",
+      product: updated,
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Internal server Error", error: err });
+  }
+}
+
+// GET PRODUCT BY ID
+export async function getProductById(req, res) {
+    const id = req.params.id;
+
+    try {
+        const foundProduct = await Product.findById(id); // Use _id from MongoDB
+        if (!foundProduct) {
+            return res.status(404).json({ message: "Product not found" });
+        }
+
+        if (!foundProduct.isAvailable && !isAdmin(req)) {
+            return res.status(404).json({ message: "Product not found" });
+        }
+
+        return res.json(foundProduct);
+    } catch (err) {
+        res.status(500).json({
+            message: "Internal server Error",
+            error: err.message,
+        });
     }
 }
 
-export async function getProductById(req, res) 
-{
-    const productId = req.params.productId;
-    try{
-        constproduct = await product.findOne({ product : productId });
-        if(product===null){
-            res.status(404).json({ message: 'Product not found' });
-            return;
-        }
-
-        if(product.isAvailable ){
-            res.json(product);
-        }else{
-            if(!isAdmin(req) ){
-                res.status(404).json({ message: 'Product not found' });
-                return;
-            }else{
-                res.json(product);
-            }   
-        }
-
-
-    }catch(err){
-        res.status(500).json({ message: 'Internal server Error', error: err });
-    }
-}
 

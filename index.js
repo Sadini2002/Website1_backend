@@ -26,13 +26,13 @@ app.use(bodyParser.json())
 app.use(express.json());
 
 // i create middleware 
- app.use((req, res, next) => {
+/* app.use((req, res, next) => {
   const tokenString = req.headers['authorization'];
 
   if (tokenString!=null) {
     const token = tokenString.replace('Bearer ', '');
 
-    jwt.verify(token, process.env.JWT_KEY, (err, decoded) => {
+   const payload= jwt.verify(token, process.env.JWT_KEY, (err, decoded) => {
   if (decoded!=null) {
     req.user = decoded;
     next();
@@ -54,9 +54,30 @@ app.use(express.json());
   } else {
     return next();
   }
+});*/
+
+app.use((req, res, next) => {
+  const authHeader = req.headers["authorization"];
+  if (!authHeader) return next(); // no token, skip
+
+  const token = authHeader.replace("Bearer ", "");
+  if (!token) return next();
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_KEY); // returns payload directly
+    req.user = decoded; // attach user info to request
+    next(); // proceed
+  } catch (err) {
+    console.error("Invalid token:", err);
+    return res.status(403).json({ message: "Invalid Token" }); 
+  }
 });
+
+
 app.use("/api/users", userRouter );  
 app.use("/orders", orderRouter );
+app.use("/api/products", productRouter );
+
 
 
 
