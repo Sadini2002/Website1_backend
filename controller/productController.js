@@ -3,6 +3,9 @@ import { isAdmin } from "./userController.js";
 
 // GET ALL PRODUCTS
 export async function getProducts(req, res) {
+  
+  
+
   try {
     if (isAdmin(req)) {
       const products = await Product.find();
@@ -18,6 +21,7 @@ export async function getProducts(req, res) {
     });
   }
 }
+
 
 // CREATE PRODUCT
 export async function saveProduct(req, res) {
@@ -83,7 +87,7 @@ export async function updateProduct(req, res) {
 
 // GET PRODUCT BY ID
 export async function getProductById(req, res) {
-    const id = req.params.id;
+    const id = req.params.Productid;
 
     try {
         const foundProduct = await Product.findById(id); // Use _id from MongoDB
@@ -104,4 +108,24 @@ export async function getProductById(req, res) {
     }
 }
 
+
+export async function getProductByProductId(req, res) {
+  const productId = req.params.productId;
+
+  try {
+    const product = await Product.findOne({ productId });
+
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    return res.json(product);
+
+  } catch (err) {
+    return res.status(500).json({
+      message: "Internal Server Error",
+      error: err.message
+    });
+  }
+}
 

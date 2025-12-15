@@ -12,7 +12,8 @@ productRouter.post("/", saveProduct);
 productRouter.delete("/:id", deleteProduct);
 productRouter.put("/:id", updateProduct);
 productRouter.get("/:id", getProductById);
-productRouter.get("/productId/:productId", getProductById);
+productRouter.get("/productId", getProductById);
+ 
 
 
 export default productRouter;
